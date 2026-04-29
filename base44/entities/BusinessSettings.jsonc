@@ -1,0 +1,123 @@
+{
+  "name": "BusinessSettings",
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string"
+    },
+    "owner_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "hours_monday": {
+      "type": "object"
+    },
+    "hours_tuesday": {
+      "type": "object"
+    },
+    "hours_wednesday": {
+      "type": "object"
+    },
+    "hours_thursday": {
+      "type": "object"
+    },
+    "hours_friday": {
+      "type": "object"
+    },
+    "hours_saturday": {
+      "type": "object"
+    },
+    "hours_sunday": {
+      "type": "object"
+    },
+    "default_duration": {
+      "type": "number"
+    },
+    "slot_interval": {
+      "type": "number"
+    },
+    "buffer_time": {
+      "type": "number"
+    },
+    "allow_same_day": {
+      "type": "boolean"
+    },
+    "require_approval": {
+      "type": "boolean"
+    },
+    "whatsapp_template": {
+      "type": "string"
+    },
+    "email_template": {
+      "type": "string"
+    },
+    "reminders_enabled": {
+      "type": "boolean"
+    },
+    "reminder_time": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "deposit_required": {
+      "type": "boolean"
+    },
+    "deposit_type": {
+      "type": "string"
+    },
+    "deposit_value": {
+      "type": "number"
+    },
+    "payment_methods": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cancellation_fee": {
+      "type": "string"
+    },
+    "primary_color": {
+      "type": "string"
+    },
+    "secondary_color": {
+      "type": "string"
+    },
+    "accent_color": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "slogan": {
+      "type": "string"
+    },
+    "booking_slug": {
+      "type": "string",
+      "description": "URL slug for the public booking portal"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "Business owner user id"
+    }
+  },
+  "required": []
+}

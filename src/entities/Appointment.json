@@ -1,0 +1,52 @@
+{
+  "name": "Appointment",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client id"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Client name (denormalized for display)"
+    },
+    "service_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Array of Service ids"
+    },
+    "service_names": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Service names (denormalized)"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Appointment date (YYYY-MM-DD)"
+    },
+    "time": {
+      "type": "string",
+      "description": "Start time (HH:MM)"
+    },
+    "duration_total": {
+      "type": "number",
+      "description": "Total duration in minutes"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "confirmed", "cancelled"],
+      "default": "confirmed",
+      "description": "Appointment status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "total_price": {
+      "type": "number",
+      "description": "Total price"
+    }
+  },
+  "required": ["client_id", "date", "time", "service_ids"]
+}

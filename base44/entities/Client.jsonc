@@ -1,0 +1,30 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Client full name"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Client phone number"
+    },
+    "email": {
+      "type": "string",
+      "description": "Client email address"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the client"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "Business owner user id"
+    }
+  },
+  "required": [
+    "name",
+    "phone"
+  ]
+}

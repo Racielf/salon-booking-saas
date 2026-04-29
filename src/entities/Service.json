@@ -1,0 +1,27 @@
+{
+  "name": "Service",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Service name"
+    },
+    "price": {
+      "type": "number",
+      "description": "Service price"
+    },
+    "duration": {
+      "type": "number",
+      "description": "Duration in minutes"
+    },
+    "color": {
+      "type": "string",
+      "description": "Color hex code for the service"
+    },
+    "description": {
+      "type": "string",
+      "description": "Service description"
+    }
+  },
+  "required": ["name", "price", "duration"]
+}

@@ -1,0 +1,92 @@
+{
+  "name": "Appointment",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client id"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Client name (denormalized for display)"
+    },
+    "service_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of Service ids"
+    },
+    "service_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Service names (denormalized)"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Appointment date (YYYY-MM-DD)"
+    },
+    "time": {
+      "type": "string",
+      "description": "Start time (HH:MM)"
+    },
+    "duration_total": {
+      "type": "number",
+      "description": "Total duration in minutes"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "waiting_client_confirmation",
+        "completed",
+        "no_show",
+        "rejected",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Appointment status"
+    },
+    "reminder_status": {
+      "type": "string",
+      "enum": [
+        "not_sent",
+        "sent",
+        "failed"
+      ],
+      "default": "not_sent",
+      "description": "Whether a reminder was sent to the client"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "total_price": {
+      "type": "number",
+      "description": "Total price"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "booking_portal"
+      ],
+      "default": "admin",
+      "description": "Where the appointment was created from"
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "Business owner user id"
+    }
+  },
+  "required": [
+    "client_id",
+    "date",
+    "time",
+    "service_ids"
+  ]
+}
