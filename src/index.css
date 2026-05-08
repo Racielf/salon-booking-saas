@@ -2,77 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-
-/* :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* ── SalonFlow "Luxe Aurora" theme utilities ───────────────────────────── */
+@layer utilities {
+  /* Backgrounds */
+  .bg-salon-app {
+    background: linear-gradient(160deg, #F8FAFC 0%, #FFF7FB 60%, #F5F3FF 100%);
   }
-  a:hover {
-    color: #747bff;
+  .bg-salon-glow {
+    background: radial-gradient(ellipse at 60% 0%, rgba(168,85,247,0.10) 0%, rgba(99,102,241,0.07) 40%, transparent 70%),
+                linear-gradient(160deg, #F8FAFC 0%, #FFF7FB 100%);
   }
-  button {
-    background-color: #f9f9f9;
+  .bg-salon-gradient {
+    background: linear-gradient(135deg, #6366F1 0%, #A855F7 48%, #EC4899 100%);
   }
-} */
+  .bg-salon-success {
+    background: linear-gradient(135deg, #10B981 0%, #06B6D4 100%);
+  }
 
+  /* Glass card */
+  .card-salon-glass {
+    background: rgba(255, 255, 255, 0.80);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 12px 0 rgba(99, 102, 241, 0.07);
+  }
 
+  /* Text */
+  .text-salon-primary { color: #6366F1; }
+  .text-salon-muted   { color: #94A3B8; }
+
+  /* Borders */
+  .border-salon-soft { border-color: #E2E8F0; }
+
+  /* Shadows */
+  .shadow-salon-soft { box-shadow: 0 2px 12px 0 rgba(99, 102, 241, 0.08); }
+  .shadow-salon-glow { box-shadow: 0 4px 24px 0 rgba(168, 85, 247, 0.25); }
+}
 
 @layer base {
   :root {
@@ -110,6 +76,7 @@ button:focus-visible {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -146,12 +113,11 @@ button:focus-visible {
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     -webkit-tap-highlight-color: transparent;
