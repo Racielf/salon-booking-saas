@@ -1,4 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { db, auth as sbAuth } from "@/api/dataAdapter";  // Phase 4: Supabase
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -261,12 +263,63 @@ function PhotoCard({ photo, onDelete, onEdit }) {
 }
 
 export default function Gallery() {
-  const [photos, setPhotos] = useState([]);
   const [showUpload, setShowUpload] = useState(false);
+  const [ownerId, setOwnerId]   = useState(null);
+  const queryClient             = useQueryClient();
 
-  const handleAdd = (photo) => setPhotos((prev) => [photo, ...prev]);
-  const handleDelete = (id) => setPhotos((prev) => prev.filter((p) => p.id !== id));
-  const handleEdit = (id, updates) => setPhotos((prev) => prev.map((p) => p.id === id ? { ...p, ...updates } : p));
+  useEffect(() => {
+    sbAuth.me().then((u) => setOwnerId(u?.id));
+  }, []);
+
+  const { data: photos = [], isLoading } = useQuery({
+    queryKey: ["gallery"],
+    queryFn: () => db.entities.GalleryImage.filter({ owner_id: ownerId }),
+    enabled: !!ownerId,
+  });
+
+  const addMutation = useMutation({
+    mutationFn: (data) => db.entities.GalleryImage.create(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["gallery"] }),
+  });
+
+  const editMutation = useMutation({
+    mutationFn: ({ id, updates }) => db.entities.GalleryImage.update(id, updates),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["gallery"] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => db.entities.GalleryImage.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["gallery"] }),
+  });
+
+  const handleAdd = (photo) => {
+    if (!ownerId) return;
+    addMutation.mutate({
+      owner_id:  ownerId,
+      image_url: photo.url,
+      title:     photo.title,
+      category:  photo.description || null,
+      is_visible: true,
+    });
+  };
+
+  const handleDelete = (id) => deleteMutation.mutate(id);
+
+  const handleEdit = (id, updates) => {
+    // Map UI 'title' field → Supabase 'title' column
+    editMutation.mutate({ id, updates: { title: updates.title } });
+  };
+
+  // Normalize Supabase row shape to what PhotoCard expects
+  const normalized = photos.map((p) => ({
+    id:          p.id,
+    url:         p.image_url,
+    title:       p.title || "Untitled",
+    description: p.category || "",
+    date:        p.created_at
+      ? new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+      : "",
+  }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-orange-50">
@@ -306,8 +359,15 @@ export default function Gallery() {
           </Button>
         </motion.div>
 
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex justify-center py-24">
+            <div className="w-8 h-8 border-4 border-violet-200 border-t-violet-500 rounded-full animate-spin" />
+          </div>
+        )}
+
         {/* Empty state */}
-        {photos.length === 0 && (
+        {!isLoading && normalized.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -328,14 +388,14 @@ export default function Gallery() {
         )}
 
         {/* Grid */}
-        {photos.length > 0 && (
+        {normalized.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
           >
             <AnimatePresence>
-              {photos.map((photo) => (
+              {normalized.map((photo) => (
                 <PhotoCard
                   key={photo.id}
                   photo={photo}

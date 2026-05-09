@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/dataAdapter";  // Phase 6: Supabase
 import { format, addDays } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
@@ -62,21 +62,33 @@ export default function BookingPortal() {
     if (!slug) { setNotFound(true); setLoading(false); return; }
 
     async function load() {
-      const allSettings = await base44.entities.BusinessSettings.list();
-      const biz = allSettings.find((s) => s.booking_slug && s.booking_slug === slug);
-      if (!biz) { setNotFound(true); setLoading(false); return; }
+      // Find salon by booking_slug stored inside the JSONB `settings` column.
+      // We use db.raw (Supabase client) because the standard adapter only supports
+      // top-level column filters — JSONB path filters need the raw client.
+      const { data: rows, error } = await db.raw
+        .from("business_settings")
+        .select("*")
+        .filter("settings->>'booking_slug'", "eq", slug)
+        .limit(1);
 
-      setSettings(biz);
-      const ownerId = biz.owner_id || biz.created_by;
+      if (error || !rows?.length) { setNotFound(true); setLoading(false); return; }
+
+      const row = rows[0];
+      const ownerId = row.owner_id;
+
+      // Flatten: spread the JSONB `settings` blob + add top-level DB columns.
+      // This preserves all existing settings.* JSX references unchanged.
+      const flatSettings = { ...(row.settings || {}), owner_id: ownerId, id: row.id };
+      setSettings(flatSettings);
 
       const [svcs, appts, flexi] = await Promise.all([
-        base44.entities.Service.filter({ owner_id: ownerId }),
-        base44.entities.Appointment.filter({ owner_id: ownerId }),
-        base44.entities.FlexiDate.filter({ owner_id: ownerId }).catch(() => []),
+        db.entities.Service.filter({ owner_id: ownerId }),
+        db.entities.Appointment.filter({ owner_id: ownerId }),
+        db.entities.FlexiDate.filter({ owner_id: ownerId }).catch(() => []),
       ]);
 
       try {
-        const gal = await base44.entities.GalleryPhoto.filter({ owner_id: ownerId });
+        const gal = await db.entities.GalleryImage.filter({ owner_id: ownerId });
         setGallery(gal || []);
       } catch { /* gallery optional */ }
 
@@ -116,11 +128,11 @@ export default function BookingPortal() {
   const handleSubmit = async () => {
     setSubmitting(true);
     setSubmitError("");
-    const ownerId = settings.owner_id || settings.created_by;
+    const ownerId = settings.owner_id;
     const dateStr = formatDateStr(selectedDate);
 
-    // Re-fetch latest appointments to prevent race conditions
-    const freshAppts = await base44.entities.Appointment.filter({ owner_id: ownerId });
+    // Re-fetch live appointments to prevent double-booking race condition
+    const freshAppts = await db.entities.Appointment.filter({ owner_id: ownerId });
     const freshSlots = getTimeSlots(settings, selectedDate, flexiDates, freshAppts, totalDuration);
     if (!freshSlots.includes(selectedTime)) {
       setSubmitError("Sorry, that time slot was just booked by someone else. Please choose another time.");
@@ -131,22 +143,22 @@ export default function BookingPortal() {
       return;
     }
 
-    // Find or create client (scoped to this business)
-    const allClients = await base44.entities.Client.filter({ owner_id: ownerId });
+    // Find or create client record scoped to this business
+    const allClients = await db.entities.Client.filter({ owner_id: ownerId });
     let client = allClients.find((c) => c.phone && c.phone === clientInfo.phone);
     if (!client && clientInfo.email) {
       client = allClients.find((c) => c.email && c.email === clientInfo.email);
     }
 
     if (client) {
-      client = await base44.entities.Client.update(client.id, {
+      client = await db.entities.Client.update(client.id, {
         name: clientInfo.name,
         phone: clientInfo.phone,
         email: clientInfo.email || client.email,
         owner_id: ownerId,
       });
     } else {
-      client = await base44.entities.Client.create({
+      client = await db.entities.Client.create({
         name: clientInfo.name,
         phone: clientInfo.phone,
         email: clientInfo.email,
@@ -155,7 +167,7 @@ export default function BookingPortal() {
       });
     }
 
-    await base44.entities.Appointment.create({
+    await db.entities.Appointment.create({
       client_id: client.id,
       client_name: clientInfo.name,
       service_ids: selectedServices.map((s) => s.id),

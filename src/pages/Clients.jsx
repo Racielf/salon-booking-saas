@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db, auth as sbAuth } from "@/api/dataAdapter";  // Phase 6: Supabase (fully migrated)
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Plus, Search, Phone, Mail, FileText, Trash2, Pencil, Calendar, ChevronLeft } from "lucide-react";
@@ -22,32 +22,32 @@ export default function Clients() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.me().then((u) => setOwnerId(u?.id));
+    sbAuth.me().then((u) => setOwnerId(u?.id));
   }, []);
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ["clients"],
-    queryFn: () => base44.entities.Client.filter({ owner_id: ownerId }),
+    queryFn: () => db.entities.Client.filter({ owner_id: ownerId }),  // Supabase
     enabled: !!ownerId,
   });
   const { data: appointments = [] } = useQuery({
     queryKey: ["appointments"],
-    queryFn: () => base44.entities.Appointment.filter({ owner_id: ownerId }),
+    queryFn: () => db.entities.Appointment.filter({ owner_id: ownerId }),
     enabled: !!ownerId,
   });
   const { data: services = [] } = useQuery({
     queryKey: ["services"],
-    queryFn: () => base44.entities.Service.filter({ owner_id: ownerId }),
+    queryFn: () => db.entities.Service.filter({ owner_id: ownerId }),
     enabled: !!ownerId,
   });
   const { data: flexiDates = [] } = useQuery({
     queryKey: ["flexiDates"],
-    queryFn: () => base44.entities.FlexiDate.list(),
+    queryFn: () => db.entities.FlexiDate.filter({ owner_id: ownerId }),
     enabled: !!ownerId,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Client.delete(id),
+    mutationFn: (id) => db.entities.Client.delete(id),  // Supabase
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["clients"] }),
   });
 

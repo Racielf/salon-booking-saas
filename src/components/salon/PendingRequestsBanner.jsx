@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/dataAdapter";  // Phase 4: Supabase
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,7 +16,7 @@ export default function PendingRequestsBanner({ appointments = [] }) {
     .slice(0, 5);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, status }) => base44.entities.Appointment.update(id, { status }),
+    mutationFn: ({ id, status }) => db.entities.Appointment.update(id, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["appointments"] }),
   });
 
