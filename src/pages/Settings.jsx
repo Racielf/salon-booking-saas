@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Building2, Clock, Calendar, Bell, CreditCard, Palette, Check, Settings as SettingsIcon, Shield, Link2 } from "lucide-react";
+import { ChevronLeft, Building2, Clock, Calendar, Bell, CreditCard, Palette, Check, Settings as SettingsIcon, Shield, Link2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSettings } from "@/lib/SettingsContext";
 import MobileNav from "@/components/layout/MobileNav";
@@ -14,6 +15,7 @@ import PaymentSettingsSection from "@/components/settings/PaymentSettingsSection
 import BrandingSettingsSection from "@/components/settings/BrandingSettingsSection";
 import BusinessAccessSection from "@/components/settings/BusinessAccessSection";
 import BookingLinkSection from "@/components/settings/BookingLinkSection";
+import PriceBookSection from "@/components/settings/PriceBookSection";
 
 const SECTIONS = [
   { id: "profile", label: "Business Profile", icon: Building2 },
@@ -24,6 +26,7 @@ const SECTIONS = [
   { id: "branding", label: "Branding", icon: Palette },
   { id: "booking_link", label: "Booking Link", icon: Link2 },
   { id: "access", label: "Business Access", icon: Shield },
+  { id: "price_book", label: "Price Book", icon: BookOpen },
 ];
 
 function SectionCard({ id, label, icon: Icon, active, onClick }) {
@@ -48,6 +51,11 @@ export default function Settings() {
   const [formData, setFormData] = useState(settings);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [ownerId, setOwnerId] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then((u) => setOwnerId(u?.id));
+  }, []);
 
   useEffect(() => {
     setFormData(settings);
@@ -94,7 +102,7 @@ export default function Settings() {
             </div>
           </div>
 
-          {activeSection !== "access" && <Button
+          {activeSection !== "access" && activeSection !== "price_book" && <Button
             onClick={handleSave}
             disabled={saving || settingsLoading}
             className={`rounded-full px-6 font-bold shadow-lg gap-2 transition-all ${
@@ -209,9 +217,12 @@ export default function Settings() {
                 {activeSection === "access" && (
                   <BusinessAccessSection data={formData} onChange={handleChange} />
                 )}
+                {activeSection === "price_book" && (
+                  <PriceBookSection ownerId={ownerId} />
+                )}
 
-                {/* Bottom save — hidden on access tab */}
-                {activeSection !== "access" && (
+                {/* Bottom save — hidden on access and price_book tabs (they manage own CRUD) */}
+                {activeSection !== "access" && activeSection !== "price_book" && (
                   <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end">
                     <Button
                       onClick={handleSave}

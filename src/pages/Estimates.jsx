@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText, Plus, Search, Trash2, Pencil, ChevronLeft,
-  X, Check, Clock
+  X, Check, Clock, BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ function calcTotals(lineItems, discount = 0, tax = 0) {
 }
 
 // ── Inline form ───────────────────────────────────────────────────────────────
-function EstimateForm({ estimate, clients, ownerId, onCancel, onSaved }) {
+function EstimateForm({ estimate, clients, ownerId, priceBookItems, onCancel, onSaved }) {
   const today = new Date().toISOString().split("T")[0];
   const [title, setTitle]         = useState(estimate?.title || "");
   const [clientId, setClientId]   = useState(estimate?.client_id || "");
@@ -51,6 +51,30 @@ function EstimateForm({ estimate, clients, ownerId, onCancel, onSaved }) {
     estimate?.line_items?.length ? estimate.line_items : [{ description: "", quantity: 1, unit_price: 0, total: 0 }]
   );
   const [saving, setSaving] = useState(false);
+  const [pbSearch, setPbSearch]   = useState("");
+  const [pbOpen, setPbOpen]       = useState(false);
+
+  // Active price book items, filterable
+  const activePbItems = (priceBookItems || []).filter(i => i.is_active);
+  const pbFiltered = activePbItems.filter(i =>
+    i.name?.toLowerCase().includes(pbSearch.toLowerCase()) ||
+    i.category?.toLowerCase().includes(pbSearch.toLowerCase())
+  );
+
+  const addFromPriceBook = (item) => {
+    const isRange = item.price_type === "range";
+    const unitPrice = isRange ? (item.min_price ?? 0) : (item.price ?? 0);
+    const rangeNote = isRange ? ` (Range: $${item.min_price ?? 0}–$${item.max_price ?? 0})` : "";
+    const newLine = {
+      description: `${item.name}${item.description ? ` — ${item.description}` : ""}${rangeNote}`,
+      quantity: 1,
+      unit_price: unitPrice,
+      total: unitPrice,
+    };
+    setLineItems(prev => [...prev, newLine]);
+    setPbOpen(false);
+    setPbSearch("");
+  };
 
   const { subtotal, total } = calcTotals(lineItems, discount, tax);
 
@@ -128,6 +152,56 @@ function EstimateForm({ estimate, clients, ownerId, onCancel, onSaved }) {
           <label className="text-xs font-semibold text-gray-500 mb-1 block">Valid Until</label>
           <Input type="date" value={validUntil} onChange={e => setValidUntil(e.target.value)} className="rounded-xl border-violet-200" />
         </div>
+      </div>
+
+      {/* ── Add from Price Book ─────────────────────────────────────────── */}
+      <div className="mb-3">
+        <div className="flex items-center gap-2 mb-2">
+          <label className="text-xs font-semibold text-gray-500">Add from Price Book</label>
+          <button onClick={() => setPbOpen(v => !v)}
+            className="text-xs text-violet-600 font-bold hover:underline flex items-center gap-1 ml-auto">
+            <BookOpen className="w-3 h-3" />{pbOpen ? "Close" : "Browse"}
+          </button>
+        </div>
+        <AnimatePresence>
+          {pbOpen && (
+            <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+              className="bg-violet-50 rounded-xl border border-violet-100 p-3 mb-2 space-y-2">
+              {activePbItems.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-2">
+                  No price book services yet.{" "}
+                  <a href="/settings" className="text-violet-500 font-bold hover:underline">Add them in Settings → Price Book.</a>
+                </p>
+              ) : (
+                <>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+                    <Input value={pbSearch} onChange={e => setPbSearch(e.target.value)}
+                      placeholder="Search services..."
+                      className="pl-7 h-8 rounded-xl border-violet-200 bg-white text-xs" />
+                  </div>
+                  <div className="max-h-44 overflow-y-auto space-y-1 pr-0.5">
+                    {pbFiltered.length === 0 && (
+                      <p className="text-xs text-gray-400 text-center py-2">No services match your search</p>
+                    )}
+                    {pbFiltered.map(item => (
+                      <button key={item.id} onClick={() => addFromPriceBook(item)}
+                        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg hover:bg-violet-100 text-left transition-colors group">
+                        <div className="min-w-0">
+                          <span className="text-xs font-bold text-gray-800 group-hover:text-violet-700">{item.name}</span>
+                          {item.category && <span className="text-[10px] text-gray-400 ml-1.5">{item.category}</span>}
+                        </div>
+                        <span className="text-xs font-black text-violet-600 font-mono shrink-0">
+                          {item.price_type === "range" ? `$${item.min_price ?? 0}–$${item.max_price ?? 0}` : `$${item.price ?? 0}`}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Line items */}
@@ -215,6 +289,12 @@ export default function Estimates() {
     enabled: !!ownerId,
   });
 
+  const { data: priceBookItems = [] } = useQuery({
+    queryKey: ["pricebook", ownerId],
+    queryFn: () => base44.entities.PriceBookItem.filter({ owner_id: ownerId }),
+    enabled: !!ownerId,
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Estimate.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["estimates"] }),
@@ -279,6 +359,7 @@ export default function Estimates() {
                 estimate={editingEstimate}
                 clients={clients}
                 ownerId={ownerId}
+                priceBookItems={priceBookItems}
                 onCancel={() => { setShowForm(false); setEditing(null); }}
                 onSaved={handleDone}
               />
