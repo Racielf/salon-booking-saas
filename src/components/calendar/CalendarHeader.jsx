@@ -1,8 +1,6 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Sparkles, Users, Scissors, Images, Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users, Scissors, Images, Settings, FileText, ScrollText } from "lucide-react";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useSettings } from "@/lib/SettingsContext";
 import UserMenu from "@/components/auth/UserMenu";
@@ -13,112 +11,72 @@ export default function CalendarHeader({ currentDate, onPrevMonth, onNextMonth, 
   const logoUrl = settings?.logo_url;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mb-4 sm:mb-6"
-    >
-      {/* ── DESKTOP / TABLET: single unified navbar row ── */}
-      <div className="hidden lg:flex items-center gap-3 mb-4">
-
-        {/* Logo */}
-        <div className="relative shrink-0">
-          <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 rounded-2xl blur-lg opacity-40 animate-pulse" />
-          <div className="relative bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 text-white px-5 py-2.5 rounded-2xl flex items-center gap-2">
-            {logoUrl ? (
-              <img src={logoUrl} alt="logo" className="w-7 h-7 rounded-lg object-cover bg-white/20" />
-            ) : (
-              <Sparkles className="w-5 h-5" />
-            )}
-            <h1 className="text-2xl font-black tracking-tight">{displayName}</h1>
-          </div>
+    <header className="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
+      {/* Desktop */}
+      <div className="hidden lg:flex items-center gap-4 px-6 py-3">
+        <div className="flex items-center gap-2 shrink-0">
+          {logoUrl ? (
+            <img src={logoUrl} alt="logo" className="w-8 h-8 rounded-xl object-cover" />
+          ) : (
+            <div className="bg-salon-gradient text-white px-3 py-1.5 rounded-xl font-black text-sm flex items-center gap-1.5 shadow-salon-glow">
+              <Scissors className="w-3.5 h-3.5" /> {displayName}
+            </div>
+          )}
         </div>
 
-        {/* Month navigator — center */}
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={onPrevMonth} className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50">
-            <ChevronLeft className="w-5 h-5 text-violet-600" />
-          </Button>
-          <motion.div key={format(currentDate, "yyyy-MM")} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="min-w-[160px] text-center">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-              {format(currentDate, "MMMM yyyy")}
-            </h2>
-          </motion.div>
-          <Button variant="outline" size="icon" onClick={onNextMonth} className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50">
-            <ChevronRight className="w-5 h-5 text-violet-600" />
-          </Button>
-          <Button onClick={onToday} className="bg-gradient-to-r from-teal-400 to-cyan-500 text-white rounded-full px-4 font-semibold shadow-lg shadow-teal-200">
+        <div className="flex items-center gap-1 ml-4">
+          <button onClick={onPrevMonth} className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <span className="text-base font-bold text-gray-800 px-2">{format(currentDate, "MMMM yyyy")}</span>
+          <button onClick={onNextMonth} className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={onToday} className="ml-1 px-4 py-1.5 bg-salon-gradient text-white text-xs font-bold rounded-full transition-all hover:opacity-90 shadow-salon-soft">
             Today
-          </Button>
+          </button>
         </div>
 
-        {/* Divider */}
-        <div className="h-8 w-px bg-violet-200 mx-1" />
+        <div className="flex-1" />
 
-        {/* Right-aligned nav links */}
-        <nav className="ml-auto flex items-center gap-1.5">
-          <Link to="/clients">
-            <Button variant="outline" className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 gap-2 font-semibold">
-              <Users className="w-4 h-4 text-violet-600" /> Clients
-            </Button>
-          </Link>
-          <Link to="/services">
-            <Button variant="outline" className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 gap-2 font-semibold">
-              <Scissors className="w-4 h-4 text-violet-600" /> Services
-            </Button>
-          </Link>
-          <Link to="/gallery">
-            <Button variant="outline" className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 gap-2 font-semibold">
-              <Images className="w-4 h-4 text-violet-600" /> Gallery
-            </Button>
-          </Link>
-          <Link to="/settings">
-            <Button variant="outline" className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 gap-2 font-semibold">
-              <Settings className="w-4 h-4 text-violet-600" /> Settings
-            </Button>
-          </Link>
-          <UserMenu />
+        <nav className="flex items-center gap-1">
+          {[
+            { to: "/clients", icon: Users, label: "Clients" },
+            { to: "/services", icon: Scissors, label: "Services" },
+            { to: "/estimates", icon: FileText, label: "Estimates" },
+            { to: "/contracts", icon: ScrollText, label: "Contracts" },
+            { to: "/gallery", icon: Images, label: "Gallery" },
+            { to: "/settings", icon: Settings, label: "Settings" },
+          ].map(({ to, icon: Icon, label }) => (
+            <Link
+              key={to}
+              to={to}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-salon-soft text-sm font-semibold text-gray-600 hover:border-[#A855F7] hover:text-[#6366F1] transition-all"
+            >
+              <Icon className="w-3.5 h-3.5" /> {label}
+            </Link>
+          ))}
+          <div className="ml-2">
+            <UserMenu />
+          </div>
         </nav>
       </div>
 
-      {/* ── MOBILE: logo + user menu row, then month navigator ── */}
-      <div className="lg:hidden">
-        {/* Top row: logo + user menu */}
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 rounded-2xl blur-lg opacity-40 animate-pulse" />
-            <div className="relative bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 text-white px-4 py-2.5 rounded-2xl flex items-center gap-2">
-              {logoUrl ? (
-                <img src={logoUrl} alt="logo" className="w-6 h-6 rounded-lg object-cover bg-white/20" />
-              ) : (
-                <Sparkles className="w-5 h-5" />
-              )}
-              <h1 className="text-xl font-black tracking-tight">{displayName}</h1>
-            </div>
+      {/* Mobile */}
+      <div className="lg:hidden px-4 py-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="bg-salon-gradient text-white px-3 py-1.5 rounded-xl font-black text-sm flex items-center gap-1.5">
+            <Scissors className="w-3.5 h-3.5" /> {displayName}
           </div>
           <UserMenu />
         </div>
-
-        {/* Month navigator */}
-        <div className="flex items-center justify-between">
-          <Button variant="outline" size="icon" onClick={onPrevMonth} className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 h-10 w-10">
-            <ChevronLeft className="w-5 h-5 text-violet-600" />
-          </Button>
-          <motion.div key={format(currentDate, "yyyy-MM")} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-            <h2 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-              {format(currentDate, "MMMM yyyy")}
-            </h2>
-          </motion.div>
-          <div className="flex items-center gap-2">
-            <Button onClick={onToday} size="sm" className="bg-gradient-to-r from-teal-400 to-cyan-500 text-white rounded-full px-3 font-semibold text-xs h-9">
-              Today
-            </Button>
-            <Button variant="outline" size="icon" onClick={onNextMonth} className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 h-10 w-10">
-              <ChevronRight className="w-5 h-5 text-violet-600" />
-            </Button>
-          </div>
+        <div className="flex items-center gap-2">
+          <button onClick={onPrevMonth} className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500"><ChevronLeft className="w-3.5 h-3.5" /></button>
+          <span className="text-sm font-bold text-gray-700 flex-1 text-center">{format(currentDate, "MMMM yyyy")}</span>
+          <button onClick={onNextMonth} className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500"><ChevronRight className="w-3.5 h-3.5" /></button>
+          <button onClick={onToday} className="px-3 py-1 bg-salon-gradient text-white text-xs font-bold rounded-full transition-all hover:opacity-90">Today</button>
         </div>
       </div>
-    </motion.div>
+    </header>
   );
 }
