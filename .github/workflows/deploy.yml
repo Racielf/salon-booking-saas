@@ -32,11 +32,12 @@ jobs:
 
       - name: Build
         # Pass base path via CLI flag — no changes to vite.config.js needed
-        # Supabase env vars injected from GitHub Secrets
+        # VITE_ vars from GitHub repository variables (safe for anon/publishable keys)
+        # Fallback to secrets if vars not set
         run: npx vite build --base /salon-booking-saas/
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
 
       # SPA fallback: GitHub Pages serves 404.html for unknown routes.
       # Copying index.html → 404.html lets React Router handle all routes.
