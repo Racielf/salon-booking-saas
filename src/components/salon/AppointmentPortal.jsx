@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db, auth as sbAuth } from "@/api/dataAdapter";  // Phase 4: Supabase
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, addDays } from "date-fns";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -54,7 +54,7 @@ export default function AppointmentPortal({
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
-    base44.auth.me().then((u) => setOwnerId(u?.id));
+    sbAuth.me().then((u) => setOwnerId(u?.id));
   }, []);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function AppointmentPortal({
   }, [open, initialDate, initialClient]);
 
   const createClientMutation = useMutation({
-    mutationFn: (data) => base44.entities.Client.create(data),
+    mutationFn: (data) => db.entities.Client.create(data),
     onSuccess: (client) => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       if (onClientCreated) onClientCreated();
@@ -82,7 +82,7 @@ export default function AppointmentPortal({
   });
 
   const saveAppointmentMutation = useMutation({
-    mutationFn: (data) => base44.entities.Appointment.create(data),
+    mutationFn: (data) => db.entities.Appointment.create(data),
     onSuccess: () => {
       if (onSaved) onSaved();
       onOpenChange(false);
@@ -120,7 +120,7 @@ export default function AppointmentPortal({
   const handleSave = async () => {
     // Strong slot lock: fetch live appointments from server before saving
     if (ownerId) {
-      const liveAppts = await base44.entities.Appointment.filter({ owner_id: ownerId });
+      const liveAppts = await db.entities.Appointment.filter({ owner_id: ownerId });
       const freshSlots = getTimeSlots(settings, selectedDate, flexiDates, liveAppts, totalDuration || 30);
       if (!freshSlots.includes(selectedTime)) {
         alert("This time slot was just taken. Please select another time.");
