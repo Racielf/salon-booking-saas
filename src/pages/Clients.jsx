@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import { pageMotion, fadeIn } from "@/lib/motion";
 import { Users, Plus, Search, Phone, Mail, FileText, Trash2, Pencil, Calendar, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,7 +72,7 @@ export default function Clients() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-orange-50">
+    <motion.div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-orange-50" {...pageMotion}>
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-300/30 to-fuchsia-300/30 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 right-1/3 w-80 h-80 bg-gradient-to-br from-orange-300/20 to-amber-300/20 rounded-full blur-3xl" />
@@ -93,12 +94,12 @@ export default function Clients() {
               </div>
             </div>
           </div>
-          <Button
+          <button
             onClick={() => { setEditingClient(null); setShowForm(true); }}
             className="bg-gradient-to-r from-fuchsia-500 to-orange-500 hover:from-fuchsia-600 hover:to-orange-600 text-white rounded-full px-5 font-bold shadow-lg gap-2"
           >
             <Plus className="w-4 h-4" /> New Client
-          </Button>
+          </button>
         </motion.div>
 
         {/* Search */}
@@ -141,12 +142,12 @@ export default function Clients() {
             </div>
             <p className="text-gray-500 font-medium mb-1">No clients yet</p>
             <p className="text-gray-400 text-sm mb-5">Add your first client to get started</p>
-            <Button
+            <button
               onClick={() => setShowForm(true)}
               className="bg-gradient-to-r from-fuchsia-500 to-orange-500 text-white rounded-full px-6 font-bold gap-2"
             >
               <Plus className="w-4 h-4" /> Add Client
-            </Button>
+            </button>
           </motion.div>
         )}
 
@@ -211,14 +212,12 @@ export default function Clients() {
                   </div>
 
                   {/* Loyalty stats */}
-                  <div className="mb-3 flex-1">
-                    <ClientLoyaltyStats stats={stats} />
-                  </div>
+                  <ClientLoyaltyStats stats={stats} />
 
                   <Button
                     onClick={() => { setPortalClient(client); setPortalOpen(true); }}
                     size="sm"
-                    className="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white rounded-xl gap-2"
+                    className="w-full mt-auto bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white rounded-xl gap-2"
                   >
                     <Calendar className="w-3.5 h-3.5" /> Book Appointment
                   </Button>
@@ -227,20 +226,20 @@ export default function Clients() {
             })}
           </AnimatePresence>
         </div>
-      </div>
 
-      <AppointmentPortal
-        open={portalOpen}
-        onOpenChange={(v) => { setPortalOpen(v); if (!v) setPortalClient(null); }}
-        initialClient={portalClient}
-        appointments={appointments}
-        services={services}
-        clients={clients}
-        flexiDates={flexiDates}
-        onSaved={() => queryClient.invalidateQueries({ queryKey: ["appointments"] })}
-        onClientCreated={() => queryClient.invalidateQueries({ queryKey: ["clients"] })}
-      />
+        <AppointmentPortal
+          open={portalOpen}
+          onOpenChange={(v) => { setPortalOpen(v); if (!v) setPortalClient(null); }}
+          initialClient={portalClient}
+          appointments={appointments}
+          services={services}
+          clients={clients}
+          flexiDates={flexiDates}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ["appointments"] })}
+          onClientCreated={() => queryClient.invalidateQueries({ queryKey: ["clients"] })}
+        />
+      </div>
       <MobileNav />
-    </div>
+    </motion.div>
   );
 }

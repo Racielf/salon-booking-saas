@@ -56,16 +56,14 @@ export default function DayCell({ date, currentMonth, flexiDates = [], appointme
     >
       {/* Day number */}
       <div className="flex items-start justify-between">
-        <span
-          className={cn(
-            "text-xs sm:text-sm lg:text-base font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full",
-            isCurrentDay
-              ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white"
-              : isClosed
-              ? "text-red-400"
-              : "text-gray-700"
-          )}
-        >
+        <span className={cn(
+          "text-xs sm:text-sm lg:text-base font-bold w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full",
+          isCurrentDay
+            ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white"
+            : isClosed
+            ? "text-red-400"
+            : "text-gray-700"
+        )}>
           {format(date, "d")}
         </span>
 
@@ -73,9 +71,9 @@ export default function DayCell({ date, currentMonth, flexiDates = [], appointme
         {(isClosed || hasSpecialHours || isExtraWorking) && (
           <span className={cn(
             "text-[8px] font-bold rounded px-1 leading-tight hidden sm:inline",
-            isClosed ? "bg-red-100 text-red-600" :
-            hasSpecialHours ? "bg-teal-100 text-teal-700" :
-            "bg-green-100 text-green-700"
+            isClosed        ? "bg-red-100 text-red-600"
+            : hasSpecialHours ? "bg-teal-100 text-teal-700"
+            :                   "bg-green-100 text-green-700"
           )}>
             {isClosed ? "CLOSED" : hasSpecialHours ? "SPECIAL" : "EXTRA"}
           </span>
@@ -88,7 +86,7 @@ export default function DayCell({ date, currentMonth, flexiDates = [], appointme
           {/* Mobile: dots */}
           <div className="flex items-center gap-0.5 sm:hidden flex-wrap">
             {confirmedCount > 0 && <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />}
-            {pendingCount > 0 && <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+            {pendingCount   > 0 && <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
             {dayAppointments.length > 2 && (
               <span className="text-[8px] text-violet-500 font-bold">+{dayAppointments.length - 2}</span>
             )}
