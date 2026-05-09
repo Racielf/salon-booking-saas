@@ -67,7 +67,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <SettingsProvider>
-        <Router>
+        <Router basename={import.meta.env.BASE_URL}>
           <NavigationTracker />
           <AuthenticatedApp />
         </Router>
