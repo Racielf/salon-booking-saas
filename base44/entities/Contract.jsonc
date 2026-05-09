@@ -1,0 +1,47 @@
+{
+  "name": "Contract",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "Business owner user id — always filter and save"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client id"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Client name (denormalized for display)"
+    },
+    "estimate_id": {
+      "type": "string",
+      "description": "Optional reference to an approved Estimate"
+    },
+    "title": {
+      "type": "string",
+      "description": "Contract title"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "sent", "signed", "cancelled"],
+      "default": "draft",
+      "description": "Contract status"
+    },
+    "contract_text": {
+      "type": "string",
+      "description": "Main body of the contract"
+    },
+    "terms": {
+      "type": "string",
+      "description": "Terms and conditions"
+    },
+    "start_date":  { "type": "string", "format": "date", "description": "Contract start date" },
+    "end_date":    { "type": "string", "format": "date", "description": "Contract end date (optional)" },
+    "signed_at":   { "type": "string", "format": "date-time", "description": "Timestamp when signed (optional)" },
+    "notes":       { "type": "string", "description": "Internal notes" },
+    "created_date": { "type": "string", "format": "date" },
+    "updated_date": { "type": "string", "format": "date" }
+  },
+  "required": ["owner_id", "title", "status"]
+}

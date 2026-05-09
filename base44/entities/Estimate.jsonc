@@ -1,0 +1,50 @@
+{
+  "name": "Estimate",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "Business owner user id — always filter and save"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client id"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Client name (denormalized for display)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Estimate title / short description"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "sent", "approved", "rejected", "converted"],
+      "default": "draft",
+      "description": "Estimate status"
+    },
+    "line_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": { "type": "string" },
+          "quantity":    { "type": "number" },
+          "unit_price":  { "type": "number" },
+          "total":       { "type": "number" }
+        }
+      },
+      "description": "Line items — totals calculated in frontend"
+    },
+    "subtotal":     { "type": "number", "description": "Sum of line item totals" },
+    "discount":     { "type": "number", "description": "Flat discount amount" },
+    "tax":          { "type": "number", "description": "Tax amount" },
+    "total":        { "type": "number", "description": "Final total (subtotal - discount + tax)" },
+    "valid_until":  { "type": "string", "format": "date", "description": "Expiration date (YYYY-MM-DD)" },
+    "notes":        { "type": "string", "description": "Additional notes visible to owner" },
+    "created_date": { "type": "string", "format": "date" },
+    "updated_date": { "type": "string", "format": "date" }
+  },
+  "required": ["owner_id", "title", "status"]
+}

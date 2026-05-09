@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Sparkles, Users, Scissors, Images, Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, Users, Scissors, Images, Settings, FileText, ScrollText } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -65,6 +65,16 @@ export default function CalendarHeader({ currentDate, onPrevMonth, onNextMonth, 
           <Link to="/services">
             <Button variant="outline" className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 gap-2 font-semibold">
               <Scissors className="w-4 h-4 text-violet-600" /> Services
+            </Button>
+          </Link>
+          <Link to="/estimates">
+            <Button variant="outline" className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 gap-2 font-semibold">
+              <FileText className="w-4 h-4 text-violet-600" /> Estimates
+            </Button>
+          </Link>
+          <Link to="/contracts">
+            <Button variant="outline" className="rounded-full border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 gap-2 font-semibold">
+              <ScrollText className="w-4 h-4 text-violet-600" /> Contracts
             </Button>
           </Link>
           <Link to="/gallery">

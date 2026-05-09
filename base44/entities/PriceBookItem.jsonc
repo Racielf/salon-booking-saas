@@ -1,0 +1,24 @@
+{
+  "name": "PriceBookItem",
+  "type": "object",
+  "properties": {
+    "owner_id":    { "type": "string",  "description": "Business owner user id — always filter and save" },
+    "category":   { "type": "string",  "description": "Service category, e.g. Uñas, Cabello, Cejas" },
+    "name":       { "type": "string",  "description": "Service name" },
+    "description":{ "type": "string",  "description": "Service description" },
+    "price_type": {
+      "type": "string",
+      "enum": ["fixed", "range"],
+      "default": "fixed",
+      "description": "fixed = single price, range = min/max price"
+    },
+    "price":      { "type": "number",  "description": "Price when price_type is fixed" },
+    "min_price":  { "type": "number",  "description": "Minimum price when price_type is range" },
+    "max_price":  { "type": "number",  "description": "Maximum price when price_type is range" },
+    "is_active":  { "type": "boolean", "default": true, "description": "Whether this item is active and usable in Estimates" },
+    "sort_order": { "type": "number",  "description": "Display order within category" },
+    "created_date": { "type": "string", "format": "date" },
+    "updated_date": { "type": "string", "format": "date" }
+  },
+  "required": ["owner_id", "name", "price_type"]
+}

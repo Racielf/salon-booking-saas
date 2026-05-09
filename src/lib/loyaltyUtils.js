@@ -16,7 +16,70 @@ export function getLoyaltyLevel(completedCount) {
   );
 }
 
-/** Returns loyalty stats for a single client based on their appointments */
+// ── Behavior categories (derived from real appointment data only) ─────────────
+export const BEHAVIOR_CATEGORIES = {
+  reliable:       { key: "reliable",       label: "Reliable",        color: "green"  },
+  needs_attention:{ key: "needs_attention",label: "Needs Attention",  color: "amber"  },
+  at_risk:        { key: "at_risk",        label: "At Risk",         color: "red"    },
+};
+
+/**
+ * Derives a behavior category from appointment history.
+ * Uses only real status fields from the Appointment entity.
+ *
+ * @param {string} clientId
+ * @param {Array}  appointments — full appointment list for the owner
+ * @returns {{ behaviorCategory: object|null, riskFlags: string[], explanation: string }}
+ */
+export function getBehaviorCategory(clientId, appointments) {
+  const all         = appointments.filter((a) => a.client_id === clientId);
+  const completed   = all.filter((a) => a.status === "completed");
+  const cancelled   = all.filter((a) => a.status === "cancelled");
+  const noShows     = all.filter((a) => a.status === "no_show");
+
+  const riskFlags = [];
+  let behaviorCategory = null;
+  let explanation = "";
+
+  if (completed.length === 0) {
+    // No completed visits yet — not enough data for a behavior category
+    return { behaviorCategory: null, riskFlags, explanation: "No completed visits yet." };
+  }
+
+  // At Risk: has completed visits but last one was 30+ days ago
+  const lastVisitDate = completed
+    .map((a) => a.date)
+    .filter(Boolean)
+    .sort()
+    .slice(-1)[0];
+  const daysSinceVisit = lastVisitDate
+    ? (Date.now() - new Date(lastVisitDate + "T12:00:00").getTime()) / 86400000
+    : Infinity;
+
+  if (daysSinceVisit >= 30) riskFlags.push("30+ days since last visit");
+  if (noShows.length > 0)   riskFlags.push(`${noShows.length} no-show(s)`);
+  if (cancelled.length >= 2) riskFlags.push(`${cancelled.length} cancellations`);
+
+  // Determine category
+  const totalBookings     = all.length;
+  const cancellationRate  = totalBookings > 0 ? cancelled.length / totalBookings : 0;
+
+  if (daysSinceVisit >= 30 && completed.length > 0) {
+    behaviorCategory = BEHAVIOR_CATEGORIES.at_risk;
+    explanation = `Last visit was ${Math.floor(daysSinceVisit)} days ago.`;
+  } else if (noShows.length > 0 || cancelled.length >= 2) {
+    behaviorCategory = BEHAVIOR_CATEGORIES.needs_attention;
+    explanation = riskFlags.join(", ");
+  } else if (completed.length >= 3 && noShows.length === 0 && cancellationRate < 0.25) {
+    behaviorCategory = BEHAVIOR_CATEGORIES.reliable;
+    explanation = `${completed.length} completed visits, low cancellation rate.`;
+  }
+
+  return { behaviorCategory, riskFlags, explanation };
+}
+
+/** Returns loyalty stats for a single client based on their appointments.
+ *  All original fields preserved. behaviorCategory, riskFlags, explanation added. */
 export function getClientStats(clientId, appointments) {
   const all = appointments.filter((a) => a.client_id === clientId);
   const completed = all.filter((a) => a.status === "completed");
@@ -40,14 +103,20 @@ export function getClientStats(clientId, appointments) {
   const favService = Object.keys(svcCount).sort((a, b) => svcCount[b] - svcCount[a])[0] || null;
 
   const level = getLoyaltyLevel(completed.length);
+  const { behaviorCategory, riskFlags, explanation } = getBehaviorCategory(clientId, appointments);
 
   return {
+    // ── Original fields (unchanged) ──
     totalAppointments: all.length,
     completedAppointments: completed.length,
     totalSpent,
     lastVisit,
     favService,
     level,
+    // ── New behavior fields ──
+    behaviorCategory,
+    riskFlags,
+    explanation,
   };
 }
 

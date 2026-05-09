@@ -1,18 +1,33 @@
 import React from "react";
-import { CalendarCheck, DollarSign, Clock, Scissors } from "lucide-react";
+import { CalendarCheck, DollarSign, Clock, Scissors, AlertTriangle, CheckCircle2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import LoyaltyBadge from "./LoyaltyBadge";
 
+const BEHAVIOR_ICONS = {
+  reliable:        { Icon: CheckCircle2,  cls: "text-green-500", bg: "bg-green-50" },
+  needs_attention: { Icon: AlertCircle,   cls: "text-amber-500", bg: "bg-amber-50" },
+  at_risk:         { Icon: AlertTriangle, cls: "text-red-500",   bg: "bg-red-50"   },
+};
+
 export default function ClientLoyaltyStats({ stats }) {
-  const { totalAppointments, completedAppointments, totalSpent, lastVisit, favService, level } = stats;
+  const { totalAppointments, completedAppointments, totalSpent, lastVisit, favService, level, behaviorCategory, explanation } = stats;
+  const behavior = behaviorCategory ? BEHAVIOR_ICONS[behaviorCategory.key] : null;
 
   return (
     <div className="space-y-2">
-      {/* Badge */}
-      <div className="flex items-center justify-between">
+      {/* Badge row */}
+      <div className="flex items-center justify-between flex-wrap gap-1">
         <LoyaltyBadge levelKey={level.key} size="sm" />
         <span className="text-[10px] text-gray-400">{completedAppointments} completed</span>
       </div>
+
+      {/* Behavior badge — compact, only when category is known */}
+      {behavior && behaviorCategory && (
+        <div className={`flex items-center gap-1.5 ${behavior.bg} rounded-lg px-2 py-1`} title={explanation}>
+          <behavior.Icon className={`w-3 h-3 shrink-0 ${behavior.cls}`} />
+          <span className={`text-[10px] font-bold ${behavior.cls}`}>{behaviorCategory.label}</span>
+        </div>
+      )}
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-1.5">
