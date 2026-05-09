@@ -2,26 +2,25 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { addMonths, subMonths } from "date-fns";
+import { Plus, CalendarOff } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { pageMotion } from "@/lib/motion";
 
 import CalendarHeader from "@/components/calendar/CalendarHeader";
 import CalendarGrid from "@/components/calendar/CalendarGrid";
 import FlexiDateModal from "@/components/calendar/FlexiDateModal";
 import AppointmentPortal from "@/components/salon/AppointmentPortal";
-import SalonControlCenter from "@/components/salon/SalonControlCenter";
-import ScheduleRuleList from "@/components/calendar/ScheduleRuleList";
 import MobileNav from "@/components/layout/MobileNav";
 import MobileControlPanel from "@/components/layout/MobileControlPanel";
-import PendingRequestsBanner from "@/components/salon/PendingRequestsBanner";
+import SalonControlCenter from "@/components/salon/SalonControlCenter";
+import ScheduleRuleList from "@/components/calendar/ScheduleRuleList";
 
 export default function Dashboard() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal]     = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
-  const [portalOpen, setPortalOpen] = useState(false);
-  const [ownerId, setOwnerId] = useState(null);
+  const [portalOpen, setPortalOpen]   = useState(false);
+  const [ownerId, setOwnerId]         = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -29,97 +28,79 @@ export default function Dashboard() {
   }, []);
 
   const { data: flexiDates = [] } = useQuery({
-    queryKey: ["flexiDates"],
-    queryFn: () => base44.entities.FlexiDate.list(),
-    enabled: !!ownerId,
+    queryKey: ["flexiDates", ownerId],
+    queryFn:  () => base44.entities.FlexiDate.filter({ owner_id: ownerId }),
+    enabled:  !!ownerId,
   });
 
   const { data: appointments = [] } = useQuery({
     queryKey: ["appointments"],
-    queryFn: () => base44.entities.Appointment.filter({ owner_id: ownerId }),
-    enabled: !!ownerId,
+    queryFn:  () => base44.entities.Appointment.filter({ owner_id: ownerId }),
+    enabled:  !!ownerId,
   });
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients"],
-    queryFn: () => base44.entities.Client.filter({ owner_id: ownerId }),
-    enabled: !!ownerId,
+    queryFn:  () => base44.entities.Client.filter({ owner_id: ownerId }),
+    enabled:  !!ownerId,
   });
 
   const { data: services = [] } = useQuery({
     queryKey: ["services"],
-    queryFn: () => base44.entities.Service.filter({ owner_id: ownerId }),
-    enabled: !!ownerId,
+    queryFn:  () => base44.entities.Service.filter({ owner_id: ownerId }),
+    enabled:  !!ownerId,
   });
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.FlexiDate.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["flexiDates"] });
-      setShowModal(false);
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["flexiDates"] }); setShowModal(false); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.FlexiDate.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["flexiDates"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["flexiDates"] }),
   });
 
   const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const handleToday = () => setCurrentDate(new Date());
-
-  const handleDayClick = (date) => {
-    setSelectedDay(date);
-    setPortalOpen(true);
-  };
+  const handleToday     = () => setCurrentDate(new Date());
+  const handleDayClick  = (date) => { setSelectedDay(date); setPortalOpen(true); };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-orange-50">
-      {/* Decorative background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-300/30 to-fuchsia-300/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-gradient-to-br from-teal-300/30 to-cyan-300/30 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 right-1/3 w-80 h-80 bg-gradient-to-br from-orange-300/30 to-amber-300/30 rounded-full blur-3xl" />
-      </div>
+    <motion.div className="min-h-screen bg-salon-glow pb-24 lg:pb-6" {...pageMotion}>
+      <CalendarHeader
+        currentDate={currentDate}
+        onPrevMonth={handlePrevMonth}
+        onNextMonth={handleNextMonth}
+        onToday={handleToday}
+      />
 
-      <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 pb-24 lg:pb-8">
-        <CalendarHeader
-          currentDate={currentDate}
-          onPrevMonth={handlePrevMonth}
-          onNextMonth={handleNextMonth}
-          onToday={handleToday}
-        />
-
-        <PendingRequestsBanner appointments={appointments} />
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex justify-end gap-2 sm:gap-3 mb-4"
-        >
-          <Button
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 lg:py-5">
+        {/* Action buttons */}
+        <div className="flex items-center justify-end gap-2 mb-4">
+          <motion.button
             onClick={() => { setSelectedDay(new Date()); setPortalOpen(true); }}
-            variant="outline"
-            className="border-2 border-violet-200 hover:border-violet-400 hover:bg-violet-50 rounded-full px-3 sm:px-5 font-bold flex items-center gap-1.5 text-sm h-10"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-violet-300 hover:text-violet-600 shadow-sm transition-colors"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
-            <Plus className="w-4 h-4 text-violet-600" />
-            <span className="hidden sm:inline">New </span>Appointment
-          </Button>
-          <Button
+            <Plus className="w-4 h-4" /> New Appointment
+          </motion.button>
+          <motion.button
             onClick={() => setShowModal(true)}
-            className="bg-gradient-to-r from-fuchsia-500 to-orange-500 hover:from-fuchsia-600 hover:to-orange-600 text-white rounded-full px-3 sm:px-6 font-bold shadow-lg shadow-fuchsia-200 flex items-center gap-1.5 text-sm h-10"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-salon-gradient text-white text-sm font-bold shadow-salon-soft hover:opacity-90"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Block / Special Day</span>
-            <span className="sm:hidden">Block Day</span>
-          </Button>
-        </motion.div>
+            <CalendarOff className="w-4 h-4" /> Block / Special Day
+          </motion.button>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-          <div className="lg:col-span-3">
+        {/* Main layout */}
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 items-start">
+          <div className="flex-1 min-w-0">
             <CalendarGrid
               currentDate={currentDate}
               flexiDates={flexiDates}
@@ -128,50 +109,50 @@ export default function Dashboard() {
             />
           </div>
 
-          <div className="hidden lg:block space-y-4">
-            <SalonControlCenter
-              appointments={appointments}
-              clients={clients}
-              services={services}
-            />
+          {/* Desktop sidebar */}
+          <div className="hidden lg:block w-72 xl:w-80 shrink-0 space-y-4">
+            <SalonControlCenter appointments={appointments} clients={clients} services={services} />
             <ScheduleRuleList
               scheduleRules={flexiDates}
               onDelete={(id) => deleteMutation.mutate(id)}
               loading={deleteMutation.isPending}
             />
           </div>
+
+          {/* Mobile control panel trigger */}
+          <div className="lg:hidden w-full">
+            <MobileControlPanel
+              appointments={appointments}
+              clients={clients}
+              services={services}
+              scheduleRules={flexiDates}
+              onDeleteRule={(id) => deleteMutation.mutate(id)}
+              deletingRule={deleteMutation.isPending}
+            />
+          </div>
         </div>
-
-        <FlexiDateModal
-          open={showModal}
-          onOpenChange={setShowModal}
-          onSave={(data) => createMutation.mutate(data)}
-          loading={createMutation.isPending}
-        />
-
-        <AppointmentPortal
-          open={portalOpen}
-          onOpenChange={(v) => { setPortalOpen(v); if (!v) setSelectedDay(null); }}
-          initialDate={selectedDay}
-          appointments={appointments}
-          services={services}
-          clients={clients}
-          flexiDates={flexiDates}
-          onSaved={() => queryClient.invalidateQueries({ queryKey: ["appointments"] })}
-          onClientCreated={() => queryClient.invalidateQueries({ queryKey: ["clients"] })}
-        />
       </div>
 
-      <MobileNav />
-
-      <MobileControlPanel
-        appointments={appointments}
-        clients={clients}
-        services={services}
-        scheduleRules={flexiDates}
-        onDeleteRule={(id) => deleteMutation.mutate(id)}
-        deletingRule={deleteMutation.isPending}
+      <FlexiDateModal
+        open={showModal}
+        onOpenChange={setShowModal}
+        onSave={(data) => createMutation.mutate({ ...data, owner_id: ownerId })}
+        loading={createMutation.isPending}
       />
-    </div>
+
+      <AppointmentPortal
+        open={portalOpen}
+        onOpenChange={(v) => { setPortalOpen(v); if (!v) setSelectedDay(null); }}
+        initialDate={selectedDay}
+        appointments={appointments}
+        services={services}
+        clients={clients}
+        flexiDates={flexiDates}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ["appointments"] })}
+        onClientCreated={() => queryClient.invalidateQueries({ queryKey: ["clients"] })}
+      />
+
+      <MobileNav />
+    </motion.div>
   );
 }
