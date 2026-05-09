@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44Client";  // still used for appointments/services/flexiDates
+import { db, auth as sbAuth } from "@/api/dataAdapter";  // Phase 2: Supabase for clients
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Plus, Search, Phone, Mail, FileText, Trash2, Pencil, Calendar, ChevronLeft } from "lucide-react";
@@ -22,12 +23,12 @@ export default function Clients() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.me().then((u) => setOwnerId(u?.id));
+    sbAuth.me().then((u) => setOwnerId(u?.id));
   }, []);
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ["clients"],
-    queryFn: () => base44.entities.Client.filter({ owner_id: ownerId }),
+    queryFn: () => db.entities.Client.filter({ owner_id: ownerId }),  // Supabase
     enabled: !!ownerId,
   });
   const { data: appointments = [] } = useQuery({
@@ -47,7 +48,7 @@ export default function Clients() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Client.delete(id),
+    mutationFn: (id) => db.entities.Client.delete(id),  // Supabase
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["clients"] }),
   });
 

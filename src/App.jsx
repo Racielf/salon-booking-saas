@@ -6,6 +6,7 @@ import Clients from './pages/Clients';
 import Services from './pages/Services';
 import Gallery from './pages/Gallery';
 import Settings from './pages/Settings';
+import LoginPage from './pages/LoginPage';  // Phase 2: Supabase login
 import { SettingsProvider } from '@/lib/SettingsContext';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -14,12 +15,11 @@ import NavigationTracker from '@/lib/NavigationTracker'
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import AuthLoadingScreen from '@/components/auth/AuthLoadingScreen';
 
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isAuthenticated } = useAuth();
   const location = useLocation();
 
   // Booking portal is always public — skip auth entirely
@@ -31,19 +31,14 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Show branded loading screen while checking auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  // Show branded loading screen while checking Supabase session
+  if (isLoadingAuth) {
     return <AuthLoadingScreen />;
   }
 
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
-    }
+  // Not authenticated → show Supabase magic-link login
+  if (!isAuthenticated) {
+    return <LoginPage />;
   }
 
   // Render the main app (authenticated)
