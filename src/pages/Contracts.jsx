@@ -61,8 +61,13 @@ function ContractForm({ contract, clients, estimates, ownerId, onCancel, onSaved
   };
 
   const handleSave = async () => {
-    if (!title.trim()) return;
+    if (!ownerId || !title.trim()) return;
     setSaving(true);
+    // Auto-set signed_at when status becomes "signed" and it hasn't been recorded yet
+    const resolvedSignedAt =
+      status === "signed" && !contract?.signed_at
+        ? new Date().toISOString()
+        : contract?.signed_at || null;
     const payload = {
       owner_id: ownerId, title: title.trim(),
       client_id: clientId || null, client_name: clientName || null,
@@ -70,6 +75,7 @@ function ContractForm({ contract, clients, estimates, ownerId, onCancel, onSaved
       status, contract_text: contractText.trim() || null,
       terms: terms.trim() || null,
       start_date: startDate || null, end_date: endDate || null,
+      signed_at: resolvedSignedAt,
       notes: notes.trim() || null,
       updated_date: today,
       ...(contract ? {} : { created_date: today }),
@@ -173,7 +179,7 @@ function ContractForm({ contract, clients, estimates, ownerId, onCancel, onSaved
       {/* Actions */}
       <div className="flex gap-2 justify-end">
         <Button variant="outline" onClick={onCancel} className="rounded-xl">Cancel</Button>
-        <Button onClick={handleSave} disabled={saving || !title.trim()}
+        <Button onClick={handleSave} disabled={saving || !title.trim() || !ownerId}
           className="bg-gradient-to-r from-fuchsia-500 to-orange-500 hover:from-fuchsia-600 hover:to-orange-600 text-white rounded-xl font-bold gap-2">
           <Check className="w-4 h-4" />{saving ? "Saving…" : contract ? "Update" : "Create Contract"}
         </Button>

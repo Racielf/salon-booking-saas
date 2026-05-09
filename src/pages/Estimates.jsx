@@ -72,7 +72,7 @@ function EstimateForm({ estimate, clients, ownerId, onCancel, onSaved }) {
   };
 
   const handleSave = async () => {
-    if (!title.trim()) return;
+    if (!ownerId || !title.trim()) return;
     setSaving(true);
     const payload = {
       owner_id: ownerId, title: title.trim(),
@@ -182,7 +182,7 @@ function EstimateForm({ estimate, clients, ownerId, onCancel, onSaved }) {
       {/* Actions */}
       <div className="flex gap-2 justify-end">
         <Button variant="outline" onClick={onCancel} className="rounded-xl">Cancel</Button>
-        <Button onClick={handleSave} disabled={saving || !title.trim()}
+        <Button onClick={handleSave} disabled={saving || !title.trim() || !ownerId}
           className="bg-gradient-to-r from-fuchsia-500 to-orange-500 hover:from-fuchsia-600 hover:to-orange-600 text-white rounded-xl font-bold gap-2">
           <Check className="w-4 h-4" />{saving ? "Saving…" : estimate ? "Update" : "Create Estimate"}
         </Button>
