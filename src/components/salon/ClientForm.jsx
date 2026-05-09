@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/dataAdapter";  // Phase 2: Supabase adapter
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,9 @@ export default function ClientForm({ client, ownerId, onCancel, onSaved }) {
 
   const saveMutation = useMutation({
     mutationFn: (data) =>
-      client ? base44.entities.Client.update(client.id, data) : base44.entities.Client.create(data),
+      client
+        ? db.entities.Client.update(client.id, data)
+        : db.entities.Client.create(data),
     onSuccess: (saved) => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       onSaved(saved);
