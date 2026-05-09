@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { db } from "@/api/dataAdapter";  // Phase 4: Supabase
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -285,27 +285,27 @@ export default function SalonControlCenter({ appointments = [], clients = [], se
 
   /* ── mutations ── */
   const acceptMutation = useMutation({
-    mutationFn: (appt) => base44.entities.Appointment.update(appt.id, { status: "confirmed" }),
+    mutationFn: (appt) => db.entities.Appointment.update(appt.id, { status: "confirmed" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["appointments"] }),
   });
   const rejectMutation = useMutation({
-    mutationFn: (appt) => base44.entities.Appointment.update(appt.id, { status: "rejected" }),
+    mutationFn: (appt) => db.entities.Appointment.update(appt.id, { status: "rejected" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["appointments"] }),
   });
   const completeMutation = useMutation({
-    mutationFn: (appt) => base44.entities.Appointment.update(appt.id, { status: "completed" }),
+    mutationFn: (appt) => db.entities.Appointment.update(appt.id, { status: "completed" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["appointments"] }),
   });
   const noShowMutation = useMutation({
-    mutationFn: (appt) => base44.entities.Appointment.update(appt.id, { status: "no_show" }),
+    mutationFn: (appt) => db.entities.Appointment.update(appt.id, { status: "no_show" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["appointments"] }),
   });
   const confirmMutation = useMutation({
-    mutationFn: (appt) => base44.entities.Appointment.update(appt.id, { status: "confirmed" }),
+    mutationFn: (appt) => db.entities.Appointment.update(appt.id, { status: "confirmed" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["appointments"] }),
   });
   const reminderSentMutation = useMutation({
-    mutationFn: (appt) => base44.entities.Appointment.update(appt.id, { reminder_status: "sent" }),
+    mutationFn: (appt) => db.entities.Appointment.update(appt.id, { reminder_status: "sent" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["appointments"] }),
   });
 

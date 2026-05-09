@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44Client";  // FlexiDate still uses Base44 (no Supabase table yet)
+import { db, auth as sbAuth } from "@/api/dataAdapter";  // Phase 4: Supabase
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { addMonths, subMonths } from "date-fns";
 import { motion } from "framer-motion";
@@ -25,7 +26,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.me().then((u) => setOwnerId(u?.id));
+    sbAuth.me().then((u) => setOwnerId(u?.id));
   }, []);
 
   const { data: flexiDates = [] } = useQuery({
@@ -36,19 +37,19 @@ export default function Dashboard() {
 
   const { data: appointments = [] } = useQuery({
     queryKey: ["appointments"],
-    queryFn: () => base44.entities.Appointment.filter({ owner_id: ownerId }),
+    queryFn: () => db.entities.Appointment.filter({ owner_id: ownerId }),
     enabled: !!ownerId,
   });
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients"],
-    queryFn: () => base44.entities.Client.filter({ owner_id: ownerId }),
+    queryFn: () => db.entities.Client.filter({ owner_id: ownerId }),
     enabled: !!ownerId,
   });
 
   const { data: services = [] } = useQuery({
     queryKey: ["services"],
-    queryFn: () => base44.entities.Service.filter({ owner_id: ownerId }),
+    queryFn: () => db.entities.Service.filter({ owner_id: ownerId }),
     enabled: !!ownerId,
   });
 
