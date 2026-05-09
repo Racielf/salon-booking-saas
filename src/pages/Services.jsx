@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db, auth as sbAuth } from "@/api/dataAdapter";  // Phase 3: Supabase
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Scissors, Plus, Clock, DollarSign, Trash2, Pencil, ChevronLeft, Check, X } from "lucide-react";
@@ -28,7 +28,7 @@ function ServiceCard({ service, onEdit, onDelete }) {
   }, [service.price, service.duration]);
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Service.update(service.id, data),
+    mutationFn: (data) => db.entities.Service.update(service.id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
   });
 
@@ -132,7 +132,9 @@ function ServiceForm({ service, ownerId, onCancel, onSaved }) {
 
   const saveMutation = useMutation({
     mutationFn: (data) =>
-      service ? base44.entities.Service.update(service.id, data) : base44.entities.Service.create(data),
+      service
+        ? db.entities.Service.update(service.id, data)
+        : db.entities.Service.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["services"] }); onSaved(); },
   });
 
@@ -229,17 +231,17 @@ export default function Services() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.me().then((u) => setOwnerId(u?.id));
+    sbAuth.me().then((u) => setOwnerId(u?.id));
   }, []);
 
   const { data: services = [], isLoading } = useQuery({
     queryKey: ["services"],
-    queryFn: () => base44.entities.Service.filter({ owner_id: ownerId }),
+    queryFn: () => db.entities.Service.filter({ owner_id: ownerId }),
     enabled: !!ownerId,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Service.delete(id),
+    mutationFn: (id) => db.entities.Service.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
   });
 

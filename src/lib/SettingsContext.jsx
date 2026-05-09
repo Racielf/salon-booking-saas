@@ -1,5 +1,21 @@
+/**
+ * SettingsContext.jsx — Phase 3: Supabase BusinessSettings
+ *
+ * Replaces base44.entities.BusinessSettings with db.entities.BusinessSettings
+ * from the Supabase data adapter.
+ *
+ * The context shape is identical:
+ *   { settings, saveSettings, loading }
+ * All settings UI components (BusinessProfileSection, etc.) are unchanged.
+ *
+ * Supabase table: business_settings
+ *   - One row per owner (unique constraint on owner_id)
+ *   - Settings stored in the `settings` JSONB column
+ *   - RLS: owner_id = auth.uid()
+ */
+
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { db, auth as sbAuth } from "@/api/dataAdapter";  // Phase 3: Supabase
 
 const SettingsContext = createContext(null);
 
@@ -12,13 +28,13 @@ const DEFAULTS = {
   website: "",
   logo_url: "",
   description: "",
-  hours_monday: { open: true, start: "09:00", end: "18:00", break_start: "", break_end: "" },
-  hours_tuesday: { open: true, start: "09:00", end: "18:00", break_start: "", break_end: "" },
-  hours_wednesday: { open: true, start: "09:00", end: "18:00", break_start: "", break_end: "" },
-  hours_thursday: { open: true, start: "09:00", end: "18:00", break_start: "", break_end: "" },
-  hours_friday: { open: true, start: "09:00", end: "18:00", break_start: "", break_end: "" },
-  hours_saturday: { open: true, start: "10:00", end: "16:00", break_start: "", break_end: "" },
-  hours_sunday: { open: false, start: "10:00", end: "15:00", break_start: "", break_end: "" },
+  hours_monday:    { open: true,  start: "09:00", end: "18:00", break_start: "", break_end: "" },
+  hours_tuesday:   { open: true,  start: "09:00", end: "18:00", break_start: "", break_end: "" },
+  hours_wednesday: { open: true,  start: "09:00", end: "18:00", break_start: "", break_end: "" },
+  hours_thursday:  { open: true,  start: "09:00", end: "18:00", break_start: "", break_end: "" },
+  hours_friday:    { open: true,  start: "09:00", end: "18:00", break_start: "", break_end: "" },
+  hours_saturday:  { open: true,  start: "10:00", end: "16:00", break_start: "", break_end: "" },
+  hours_sunday:    { open: false, start: "10:00", end: "15:00", break_start: "", break_end: "" },
   default_duration: 60,
   slot_interval: 30,
   buffer_time: 0,
@@ -44,34 +60,60 @@ const DEFAULTS = {
 
 export function SettingsProvider({ children }) {
   const [settings, setSettings] = useState(DEFAULTS);
-  const [recordId, setRecordId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [recordId, setRecordId]   = useState(null);
+  const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
     async function loadSettings() {
-      const user = await base44.auth.me();
-      if (!user) { setLoading(false); return; }
-      // Filter by owner_id to ensure strict business isolation
-      const records = await base44.entities.BusinessSettings.filter({ owner_id: user.id });
-      if (records && records.length > 0) {
-        setRecordId(records[0].id);
-        setSettings({ ...DEFAULTS, ...records[0] });
+      try {
+        const user = await sbAuth.me();
+        if (!user) { setLoading(false); return; }
+
+        // business_settings table stores settings in a JSONB `settings` column.
+        // One row per owner (unique constraint), so we take the first result.
+        const records = await db.entities.BusinessSettings.filter({ owner_id: user.id });
+
+        if (records && records.length > 0) {
+          setRecordId(records[0].id);
+          // Merge the stored `settings` JSONB blob with DEFAULTS
+          const storedSettings = records[0].settings || {};
+          setSettings({ ...DEFAULTS, ...storedSettings });
+        }
+      } catch (err) {
+        console.warn('[SettingsContext] Failed to load settings:', err.message);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
-    loadSettings().catch(() => setLoading(false));
+    loadSettings();
   }, []);
 
+  /**
+   * saveSettings — persists a partial or full settings update.
+   * Merges with existing settings before saving.
+   */
   const saveSettings = async (newSettings) => {
-    const user = await base44.auth.me();
-    const payload = { ...newSettings, owner_id: user?.id };
+    const user = await sbAuth.me();
+    if (!user) throw new Error('Not authenticated');
+
+    const merged = { ...settings, ...newSettings };
+
     if (recordId) {
-      await base44.entities.BusinessSettings.update(recordId, payload);
+      // Update existing row — store all settings in the `settings` JSONB column
+      await db.entities.BusinessSettings.update(recordId, {
+        settings: merged,
+        owner_id: user.id,
+      });
     } else {
-      const created = await base44.entities.BusinessSettings.create(payload);
+      // First save — create a new row for this owner
+      const created = await db.entities.BusinessSettings.create({
+        owner_id: user.id,
+        settings: merged,
+      });
       setRecordId(created.id);
     }
-    setSettings({ ...DEFAULTS, ...newSettings });
+
+    setSettings(merged);
   };
 
   return (
