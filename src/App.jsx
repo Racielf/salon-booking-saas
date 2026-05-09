@@ -6,6 +6,8 @@ import Clients from './pages/Clients';
 import Services from './pages/Services';
 import Gallery from './pages/Gallery';
 import Settings from './pages/Settings';
+import Estimates from './pages/Estimates';    // Phase 5: Supabase
+import Contracts from './pages/Contracts';    // Phase 5: Supabase
 import LoginPage from './pages/LoginPage';  // Phase 2: Supabase login
 import { SettingsProvider } from '@/lib/SettingsContext';
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -50,6 +52,8 @@ const AuthenticatedApp = () => {
       <Route path="/services" element={<Services />} />
       <Route path="/gallery" element={<Gallery />} />
       <Route path="/settings" element={<Settings />} />
+      <Route path="/estimates" element={<Estimates />} />  {/* Phase 5 */}
+      <Route path="/contracts" element={<Contracts />} />  {/* Phase 5 */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
