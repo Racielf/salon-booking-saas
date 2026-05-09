@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";  // FlexiDate still uses Base44 (no Supabase table yet)
-import { db, auth as sbAuth } from "@/api/dataAdapter";  // Phase 4: Supabase
+import { db, auth as sbAuth } from "@/api/dataAdapter";  // Phase 6: Supabase (base44 fully removed)
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { addMonths, subMonths } from "date-fns";
 import { motion } from "framer-motion";
@@ -31,7 +30,7 @@ export default function Dashboard() {
 
   const { data: flexiDates = [] } = useQuery({
     queryKey: ["flexiDates"],
-    queryFn: () => base44.entities.FlexiDate.list(),
+    queryFn: () => db.entities.FlexiDate.filter({ owner_id: ownerId }),  // Phase 6: Supabase
     enabled: !!ownerId,
   });
 
@@ -54,7 +53,7 @@ export default function Dashboard() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.FlexiDate.create(data),
+    mutationFn: (data) => db.entities.FlexiDate.create({ ...data, owner_id: ownerId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["flexiDates"] });
       setShowModal(false);
@@ -62,7 +61,7 @@ export default function Dashboard() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.FlexiDate.delete(id),
+    mutationFn: (id) => db.entities.FlexiDate.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["flexiDates"] });
     },

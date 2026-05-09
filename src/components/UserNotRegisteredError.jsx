@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { auth as sbAuth } from '@/api/dataAdapter';
 import { Scissors, ShieldX, LogOut, Mail, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -50,7 +50,7 @@ const UserNotRegisteredError = () => {
             </div>
 
             <Button
-              onClick={() => base44.auth.logout()}
+              onClick={() => sbAuth.signOut().then(() => window.location.href = '/')}
               className="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white rounded-xl font-bold gap-2"
             >
               <LogOut className="w-4 h-4" /> Sign Out & Try Again

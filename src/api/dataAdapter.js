@@ -8,11 +8,10 @@
  *   backed by Supabase, to enable gradual page-by-page migration without
  *   a big-bang rewrite.
  *
- * CURRENT STATE (Phase 1 — Foundation):
- *   - Generic helpers are implemented and ready to use.
- *   - Entity-specific adapters are defined as skeletons.
- *   - NO page currently imports from this file.
- *   - Pages still use base44.entities.* from @/api/base44Client.
+ * CURRENT STATE (Phase 6 — BookingPortal):
+ *   - All dashboard entities migrated to Supabase (Phases 2-5).
+ *   - FlexiDate added for flexi_dates table.
+ *   - supabase client exported directly for JSONB queries.
  *
  * MIGRATION PATTERN (when a page is ready to migrate):
  *   BEFORE: import { base44 } from "@/api/base44Client";
@@ -164,9 +163,7 @@ export const db = {
     Estimate:      makeEntityAdapter("estimates"),
     Contract:      makeEntityAdapter("contracts"),
     PriceBookItem: makeEntityAdapter("price_book_items"),
-
-    // EstimateLineItems: managed with Estimate in Phase 5
-    // Will be added when Estimates page is migrated.
+    FlexiDate:     makeEntityAdapter("flexi_dates"),  // Phase 6: blocked/special days
   },
 
   // Direct Supabase client access for advanced queries
